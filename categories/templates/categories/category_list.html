@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Categories{% endblock %}
+
+{% block content %}
+<section class="mb-4 flex items-center justify-between gap-3">
+    <h1 class="text-2xl font-bold">Categories</h1>
+    <a href="{% url 'categories:create' %}" class="rounded-lg bg-cyan-700 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">Add Category</a>
+</section>
+
+<section class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+    <table class="w-full text-left text-sm">
+        <thead class="bg-slate-100 text-slate-700">
+            <tr>
+                <th class="px-4 py-3 font-semibold">Name</th>
+                <th class="px-4 py-3 font-semibold">Description</th>
+                <th class="px-4 py-3 font-semibold">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for category in categories %}
+                <tr class="border-t border-slate-200">
+                    <td class="px-4 py-3 font-medium">{{ category.name }}</td>
+                    <td class="px-4 py-3 text-slate-600">{{ category.description|truncatewords:15 }}</td>
+                    <td class="px-4 py-3">
+                        <div class="flex gap-2">
+                            <a href="{% url 'categories:update' category.pk %}" class="rounded-md border border-slate-300 px-3 py-1 font-semibold hover:bg-slate-100">Edit</a>
+                            <a href="{% url 'categories:delete' category.pk %}" class="rounded-md border border-rose-300 px-3 py-1 font-semibold text-rose-700 hover:bg-rose-50">Delete</a>
+                        </div>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="3" class="px-4 py-8 text-center text-slate-600">No categories found.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

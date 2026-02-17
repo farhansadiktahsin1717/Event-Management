@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Event Management{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+    <nav class="border-b border-slate-200 bg-white">
+        <div class="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4">
+            <a href="{% url 'events:list' %}" class="text-xl font-bold tracking-tight text-cyan-700">EventManagement</a>
+            <div class="flex flex-wrap items-center gap-2 text-sm font-medium">
+                <a href="{% url 'events:list' %}" class="rounded-md px-3 py-2 hover:bg-slate-100">Events</a>
+                <a href="{% url 'events:dashboard' %}" class="rounded-md px-3 py-2 hover:bg-slate-100">Dashboard</a>
+                <a href="{% url 'users:list' %}" class="rounded-md px-3 py-2 hover:bg-slate-100">Participants</a>
+                <a href="{% url 'categories:list' %}" class="rounded-md px-3 py-2 hover:bg-slate-100">Categories</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="mx-auto w-full max-w-7xl px-4 py-6">
+        {% if messages %}
+            <div class="mb-4 space-y-2">
+                {% for message in messages %}
+                    <div class="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
