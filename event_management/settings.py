@@ -6,9 +6,8 @@ SECRET_KEY = "django-insecure-h*-gec&r6g2gmtjk6fya6ytsv4-@1tzb%$^8hq)ju1po9m2tnv
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
-CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com', 'http://127.0.0.1:8000/']
-
+ALLOWED_HOSTS = ["*"]
+CSRF_TRUSTED_ORIGINS = ["https://*.onrender.com", "http://127.0.0.1:8000"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -20,11 +19,11 @@ INSTALLED_APPS = [
     "events",
     "users",
     "categories",
-    'tailwind',
-    'theme'
+    "tailwind",
+    "theme",
 ]
 
-TAILWIND_APP_NAME = 'theme'
+TAILWIND_APP_NAME = "theme"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -55,14 +54,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "event_management.wsgi.application"
 
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
-
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -79,14 +76,19 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "UTC"
-
 USE_I18N = True
-
 USE_TZ = True
 
-
 STATIC_URL = "static/"
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "noreply@event-management.local"
+SITE_URL = "http://127.0.0.1:8000"
+
+LOGIN_URL = "users:login"
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

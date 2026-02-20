@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<section class="mb-5">
+    <h1 class="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
+    <p class="mt-1 text-sm text-slate-600">Manage users, roles, groups, events, and categories.</p>
+</section>
+
+<section class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="rounded-xl border border-slate-200 bg-white p-4">
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Events</p>
+        <p class="mt-2 text-3xl font-bold">{{ counts.events }}</p>
+    </div>
+    <div class="rounded-xl border border-slate-200 bg-white p-4">
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Participants</p>
+        <p class="mt-2 text-3xl font-bold text-cyan-700">{{ counts.participants }}</p>
+    </div>
+    <div class="rounded-xl border border-slate-200 bg-white p-4">
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Organizers</p>
+        <p class="mt-2 text-3xl font-bold text-emerald-700">{{ counts.organizers }}</p>
+    </div>
+    <div class="rounded-xl border border-slate-200 bg-white p-4">
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Categories</p>
+        <p class="mt-2 text-3xl font-bold text-amber-700">{{ counts.categories }}</p>
+    </div>
+</section>
+
+<section class="mb-6 rounded-xl border border-slate-200 bg-white p-5">
+    <h2 class="mb-3 text-xl font-bold">Create Group</h2>
+    <form method="post" action="{% url 'users:create-group' %}" class="flex flex-wrap items-center gap-2">
+        {% csrf_token %}
+        {{ group_form.name }}
+        <button type="submit" class="rounded-lg bg-cyan-700 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">Create</button>
+    </form>
+    <div class="mt-4 flex flex-wrap gap-2">
+        {% for group in groups %}
+            <form method="post" action="{% url 'users:delete-group' group.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-semibold hover:bg-slate-100">Delete {{ group.name }}</button>
+            </form>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="rounded-xl border border-slate-200 bg-white p-5">
+    <h2 class="mb-3 text-xl font-bold">User Roles</h2>
+    <div class="space-y-3">
+        {% for row in role_forms %}
+            <form method="post" action="{% url 'users:update-role' %}" class="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 p-3">
+                {% csrf_token %}
+                <div class="min-w-48 text-sm font-semibold">{{ row.user.username }} {% if row.user.email %}<span class="text-slate-500">({{ row.user.email }})</span>{% endif %}</div>
+                {{ row.form.user_id }}
+                {{ row.form.role }}
+                <button type="submit" class="rounded-md bg-slate-800 px-3 py-1.5 text-sm font-semibold text-white hover:bg-slate-900">Update Role</button>
+            </form>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

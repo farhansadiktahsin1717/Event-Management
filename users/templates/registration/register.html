@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up{% endblock %}
+
+{% block content %}
+<section class="mx-auto max-w-2xl rounded-xl border border-slate-200 bg-white p-6">
+    <h1 class="mb-4 text-2xl font-bold">Create Account</h1>
+    <form method="post" class="grid gap-4 md:grid-cols-2">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="{% if field.name == 'password1' or field.name == 'password2' %}md:col-span-2{% endif %}">
+                <label for="{{ field.id_for_label }}" class="mb-1 block text-sm font-semibold text-slate-700">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                    <div class="mt-1 text-sm text-rose-700">{{ field.errors|striptags }}</div>
+                {% endif %}
+            </div>
+        {% endfor %}
+        <div class="md:col-span-2">
+            <button type="submit" class="w-full rounded-lg bg-cyan-700 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">Sign Up</button>
+        </div>
+    </form>
+    <p class="mt-4 text-sm text-slate-600">Already have an account? <a class="font-semibold text-cyan-700" href="{% url 'users:login' %}">Login</a>.</p>
+</section>
+{% endblock %}

@@ -1,14 +1,24 @@
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from categories.models import Category
+from users.utils import role_flags_for_user, role_required
 
 from .forms import EventForm
 from .models import Event
 
 
+def with_role_context(request, context=None):
+    base = role_flags_for_user(request.user)
+    if context:
+        base.update(context)
+    return base
+
+
+@login_required
 def event_list(request):
     events = Event.objects.select_related("category").prefetch_related("participants")
     categories = Category.objects.order_by("name")
@@ -43,10 +53,14 @@ def event_list(request):
         "end_date": end_date,
         "total_participants": participant_totals["total"] or 0,
         "today": today,
+        "can_manage": request.user.is_superuser
+        or request.user.groups.filter(name__in=["Admin", "Organizer"]).exists(),
+        "is_participant": request.user.groups.filter(name="Participant").exists(),
     }
-    return render(request, "events/event_list.html", context)
+    return render(request, "events/event_list.html", with_role_context(request, context))
 
 
+@login_required
 def event_detail(request, pk):
     event = get_object_or_404(
         Event.objects.select_related("category").prefetch_related("participants"),
@@ -55,13 +69,21 @@ def event_detail(request, pk):
     return render(
         request,
         "events/event_detail.html",
-        {
-            "event": event,
-            "participant_count": event.participants.count(),
-        },
+        with_role_context(
+            request,
+            {
+                "event": event,
+                "participant_count": event.participants.count(),
+                "already_rsvped": event.participants.filter(pk=request.user.pk).exists(),
+                "can_manage": request.user.is_superuser
+                or request.user.groups.filter(name__in=["Admin", "Organizer"]).exists(),
+                "is_participant": request.user.groups.filter(name="Participant").exists(),
+            },
+        ),
     )
 
 
+@role_required("Admin", "Organizer")
 def dashboard(request):
     events = Event.objects.select_related("category").prefetch_related("participants")
     today = timezone.localdate()
@@ -81,30 +103,39 @@ def dashboard(request):
     return render(
         request,
         "events/dashboard.html",
-        {
-            "counts": event_counts,
-            "total_participants": participant_totals["total"] or 0,
-            "today_events": today_events,
-            "all_events": all_events,
-            "upcoming_events": upcoming_events,
-            "past_events": past_events,
-            "today": today,
-        },
+        with_role_context(
+            request,
+            {
+                "counts": event_counts,
+                "total_participants": participant_totals["total"] or 0,
+                "today_events": today_events,
+                "all_events": all_events,
+                "upcoming_events": upcoming_events,
+                "past_events": past_events,
+                "today": today,
+            },
+        ),
     )
 
 
+@role_required("Admin", "Organizer")
 def create_event(request):
-    form = EventForm(request.POST or None)
+    form = EventForm(request.POST or None, request.FILES or None)
     if form.is_valid():
         form.save()
         messages.success(request, "Event created successfully.")
         return redirect("events:list")
-    return render(request, "events/event_form.html", {"form": form, "title": "Create Event"})
+    return render(
+        request,
+        "events/event_form.html",
+        with_role_context(request, {"form": form, "title": "Create Event"}),
+    )
 
 
+@role_required("Admin", "Organizer")
 def update_event(request, pk):
     event = get_object_or_404(Event, pk=pk)
-    form = EventForm(request.POST or None, instance=event)
+    form = EventForm(request.POST or None, request.FILES or None, instance=event)
     if form.is_valid():
         form.save()
         messages.success(request, "Event updated successfully.")
@@ -112,14 +143,34 @@ def update_event(request, pk):
     return render(
         request,
         "events/event_form.html",
-        {"form": form, "title": "Update Event"},
+        with_role_context(request, {"form": form, "title": "Update Event"}),
     )
 
 
+@role_required("Admin", "Organizer")
 def delete_event(request, pk):
     event = get_object_or_404(Event, pk=pk)
     if request.method == "POST":
         event.delete()
         messages.success(request, "Event deleted successfully.")
         return redirect("events:list")
-    return render(request, "events/event_confirm_delete.html", {"event": event})
+    return render(
+        request,
+        "events/event_confirm_delete.html",
+        with_role_context(request, {"event": event}),
+    )
+
+
+@role_required("Participant")
+def rsvp_event(request, pk):
+    event = get_object_or_404(Event, pk=pk)
+    if request.method != "POST":
+        return redirect("events:detail", pk=event.pk)
+
+    if event.participants.filter(pk=request.user.pk).exists():
+        messages.info(request, "You have already RSVP'd to this event.")
+    else:
+        event.participants.add(request.user)
+        messages.success(request, "RSVP completed successfully. A confirmation email has been sent.")
+
+    return redirect("events:detail", pk=event.pk)
