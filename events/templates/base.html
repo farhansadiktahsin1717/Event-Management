@@ -14,6 +14,7 @@
                 {% if request.user.is_authenticated %}
                     <a href="{% url 'events:list' %}" class="rounded-md px-3 py-2 hover:bg-slate-100">Events</a>
                     <a href="{% url 'users:dashboard' %}" class="rounded-md px-3 py-2 hover:bg-slate-100">Dashboard</a>
+                    <a href="{% url 'users:profile' %}" class="rounded-md px-3 py-2 hover:bg-slate-100">Profile</a>
                     {% if is_admin_user or is_organizer_user %}
                         <a href="{% url 'categories:list' %}" class="rounded-md px-3 py-2 hover:bg-slate-100">Categories</a>
                     {% endif %}

@@ -90,5 +90,6 @@ DEFAULT_FROM_EMAIL = "noreply@event-management.local"
 SITE_URL = "http://127.0.0.1:8000"
 
 LOGIN_URL = "users:login"
+AUTH_USER_MODEL = "users.User"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

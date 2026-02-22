@@ -1,17 +1,22 @@
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, get_user_model, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.models import Group
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.decorators import method_decorator
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
+from django.views import View
 
 from categories.models import Category
 from events.models import Event
 
-from .forms import GroupCreateForm, LoginForm, RoleUpdateForm, SignUpForm
+from .forms import GroupCreateForm, LoginForm, ProfileUpdateForm, RoleUpdateForm, SignUpForm
 from .utils import role_flags_for_user, role_required, user_has_role
+
+User = get_user_model()
 
 
 def with_role_context(request, context=None):
@@ -21,26 +26,39 @@ def with_role_context(request, context=None):
     return base
 
 
-def signup_view(request):
-    if request.user.is_authenticated:
-        return redirect("users:dashboard")
+class SignupView(View):
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect("users:dashboard")
+        return super().dispatch(request, *args, **kwargs)
 
-    form = SignUpForm(request.POST or None)
-    if form.is_valid():
-        user = form.save(commit=False)
-        user.is_active = False
-        user.save()
+    def get(self, request):
+        form = SignUpForm()
+        return render(request, "registration/register.html", with_role_context(request, {"form": form}))
 
-        participant_group, _ = Group.objects.get_or_create(name="Participant")
-        user.groups.add(participant_group)
+    def post(self, request):
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.is_active = False
+            # Pass request through the model instance so signal can build the correct absolute activation URL.
+            user._activation_request = request
+            user.save()
 
-        messages.success(request, "Account created. Please check your email to activate your account.")
-        return redirect("users:login")
+            participant_group, _ = Group.objects.get_or_create(name="Participant")
+            user.groups.add(participant_group)
 
-    return render(request, "registration/register.html", with_role_context(request, {"form": form}))
+            messages.success(request, "Account created. Please check your email to activate your account.")
+            return redirect("users:login")
+
+        return render(request, "registration/register.html", with_role_context(request, {"form": form}))
 
 
 def activate_account(request, uidb64, token):
+    # Some email clients/console outputs wrap long URLs using soft breaks ("=\n").
+    # Normalize copied tokens so activation still succeeds.
+    token = (token or "").replace("\r", "").replace("\n", "").replace(" ", "").replace("=", "")
+
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=uid)
@@ -57,42 +75,52 @@ def activate_account(request, uidb64, token):
     return redirect("users:login")
 
 
-def login_view(request):
-    if request.user.is_authenticated:
+class LoginView(View):
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect("users:dashboard")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request):
+        form = LoginForm(request)
+        return render(request, "registration/login.html", with_role_context(request, {"form": form}))
+
+    def post(self, request):
+        form = LoginForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get("username")
+            password = form.cleaned_data.get("password")
+            user = authenticate(request, username=username, password=password)
+
+            if user is None:
+                messages.error(request, "Invalid credentials.")
+            elif not user.is_active:
+                messages.error(request, "Your account is not activated yet.")
+            else:
+                login(request, user)
+                return redirect("users:dashboard")
+
+        return render(request, "registration/login.html", with_role_context(request, {"form": form}))
+
+
+@method_decorator(login_required, name="dispatch")
+class LogoutView(View):
+    def get(self, request):
         return redirect("users:dashboard")
 
-    form = LoginForm(request, data=request.POST or None)
-    if request.method == "POST" and form.is_valid():
-        username = form.cleaned_data.get("username")
-        password = form.cleaned_data.get("password")
-        user = authenticate(request, username=username, password=password)
-
-        if user is None:
-            messages.error(request, "Invalid credentials.")
-        elif not user.is_active:
-            messages.error(request, "Your account is not activated yet.")
-        else:
-            login(request, user)
-            return redirect("users:dashboard")
-
-    return render(request, "registration/login.html", with_role_context(request, {"form": form}))
-
-
-@login_required
-def logout_view(request):
-    if request.method == "POST":
+    def post(self, request):
         logout(request)
         return redirect("users:login")
-    return redirect("users:dashboard")
 
 
-@login_required
-def dashboard_redirect_view(request):
-    if request.user.is_superuser or user_has_role(request.user, "Admin"):
-        return redirect("users:admin-dashboard")
-    if user_has_role(request.user, "Organizer"):
-        return redirect("events:dashboard")
-    return redirect("users:participant-dashboard")
+@method_decorator(login_required, name="dispatch")
+class DashboardRedirectView(View):
+    def get(self, request):
+        if request.user.is_superuser or user_has_role(request.user, "Admin"):
+            return redirect("users:admin-dashboard")
+        if user_has_role(request.user, "Organizer"):
+            return redirect("events:dashboard")
+        return redirect("users:participant-dashboard")
 
 
 @role_required("Admin")
@@ -222,11 +250,71 @@ def delete_participant(request, pk):
     )
 
 
-@role_required("Participant", "Admin")
-def participant_dashboard(request):
-    events = request.user.rsvp_events.select_related("category").order_by("date", "time")
-    return render(
-        request,
-        "users/participant_dashboard.html",
-        with_role_context(request, {"events": events}),
-    )
+@method_decorator(role_required("Participant", "Admin"), name="dispatch")
+class ParticipantDashboardView(View):
+    def get(self, request):
+        events = request.user.rsvp_events.select_related("category").order_by("date", "time")
+        return render(
+            request,
+            "users/participant_dashboard.html",
+            with_role_context(request, {"events": events}),
+        )
+
+
+@method_decorator(login_required, name="dispatch")
+class ProfileDetailView(View):
+    def get(self, request):
+        return render(
+            request,
+            "users/profile_detail.html",
+            with_role_context(request, {"profile_user": request.user}),
+        )
+
+
+@method_decorator(login_required, name="dispatch")
+class ProfileEditView(View):
+    def get(self, request):
+        form = ProfileUpdateForm(instance=request.user)
+        return render(
+            request,
+            "users/profile_edit.html",
+            with_role_context(request, {"form": form}),
+        )
+
+    def post(self, request):
+        form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully.")
+            return redirect("users:profile")
+
+        return render(
+            request,
+            "users/profile_edit.html",
+            with_role_context(request, {"form": form}),
+        )
+
+
+@method_decorator(login_required, name="dispatch")
+class ChangePasswordView(View):
+    def get(self, request):
+        form = PasswordChangeForm(request.user)
+        return render(
+            request,
+            "users/change_password.html",
+            with_role_context(request, {"form": form}),
+        )
+
+    def post(self, request):
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)
+            messages.success(request, "Password changed successfully.")
+            return redirect("users:profile")
+
+        return render(
+            request,
+            "users/change_password.html",
+            with_role_context(request, {"form": form}),
+        )

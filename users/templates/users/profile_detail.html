@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<section class="mx-auto max-w-3xl rounded-xl border border-slate-200 bg-white p-6">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 class="text-2xl font-bold">My Profile</h1>
+        <div class="flex gap-2">
+            <a href="{% url 'users:edit-profile' %}" class="rounded-lg bg-cyan-700 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">Edit Profile</a>
+            <a href="{% url 'users:change-password' %}" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-100">Change Password</a>
+        </div>
+    </div>
+
+    <div class="mt-6 grid gap-6 md:grid-cols-[180px_1fr]">
+        <div>
+            <img src="{{ profile_user.profile_picture.url }}" alt="Profile picture" class="h-40 w-40 rounded-full border border-slate-200 object-cover">
+        </div>
+        <dl class="grid gap-3 text-sm">
+            <div>
+                <dt class="font-semibold text-slate-600">Username</dt>
+                <dd>{{ profile_user.username }}</dd>
+            </div>
+            <div>
+                <dt class="font-semibold text-slate-600">Full Name</dt>
+                <dd>{{ profile_user.first_name }} {{ profile_user.last_name }}</dd>
+            </div>
+            <div>
+                <dt class="font-semibold text-slate-600">Email</dt>
+                <dd>{{ profile_user.email }}</dd>
+            </div>
+            <div>
+                <dt class="font-semibold text-slate-600">Phone Number</dt>
+                <dd>{{ profile_user.phone_number|default:"Not set" }}</dd>
+            </div>
+        </dl>
+    </div>
+</section>
+{% endblock %}
