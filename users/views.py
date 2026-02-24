@@ -55,8 +55,6 @@ class SignupView(View):
 
 
 def activate_account(request, uidb64, token):
-    # Some email clients/console outputs wrap long URLs using soft breaks ("=\n").
-    # Normalize copied tokens so activation still succeeds.
     token = (token or "").replace("\r", "").replace("\n", "").replace(" ", "").replace("=", "")
 
     try:
