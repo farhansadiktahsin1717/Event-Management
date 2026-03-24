@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import Group
 from django.contrib.auth.tokens import default_token_generator
+from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_str
@@ -24,6 +25,11 @@ def with_role_context(request, context=None):
     if context:
         base.update(context)
     return base
+
+
+def paginate_queryset(request, queryset, per_page):
+    paginator = Paginator(queryset, per_page)
+    return paginator.get_page(request.GET.get("page"))
 
 
 class SignupView(View):
@@ -133,8 +139,9 @@ def admin_dashboard(request):
         "categories": Category.objects.count(),
     }
 
+    users_page = paginate_queryset(request, users_qs, 10)
     role_forms = []
-    for user in users_qs:
+    for user in users_page.object_list:
         current_group = user.groups.values_list("name", flat=True).first() or "Participant"
         role_forms.append(
             {
@@ -154,6 +161,7 @@ def admin_dashboard(request):
             {
                 "counts": counts,
                 "role_forms": role_forms,
+                "page_obj": users_page,
                 "group_form": group_form,
                 "groups": groups,
             },
@@ -218,16 +226,24 @@ def delete_group(request, pk):
 
 @role_required("Admin")
 def participant_list(request):
-    participants = (
+    page_obj = paginate_queryset(
+        request,
         User.objects.filter(groups__name="Participant")
         .prefetch_related("rsvp_events")
         .order_by("username")
-        .distinct()
+        .distinct(),
+        9,
     )
     return render(
         request,
         "users/participant_list.html",
-        with_role_context(request, {"participants": participants}),
+        with_role_context(
+            request,
+            {
+                "participants": page_obj.object_list,
+                "page_obj": page_obj,
+            },
+        ),
     )
 
 

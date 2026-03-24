@@ -1,0 +1,13 @@
+<svg width="600" height="600" viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="avatarBg" x1="40" y1="40" x2="560" y2="560" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0F766E"/>
+      <stop offset="1" stop-color="#F97316"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="600" rx="120" fill="url(#avatarBg)"/>
+  <circle cx="300" cy="228" r="94" fill="white" fill-opacity="0.22"/>
+  <path d="M146 472C167.737 389.956 241.398 332 323 332C404.602 332 478.263 389.956 500 472V508H146V472Z" fill="white" fill-opacity="0.2"/>
+  <text x="300" y="298" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="110" font-weight="700">LA</text>
+  <text x="300" y="548" text-anchor="middle" fill="white" fill-opacity="0.88" font-family="Arial, sans-serif" font-size="34" font-weight="600">Lina Ahmed</text>
+</svg>

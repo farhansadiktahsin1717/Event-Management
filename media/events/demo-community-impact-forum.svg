@@ -1,0 +1,25 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="110" y1="80" x2="1460" y2="820" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1F2937"/>
+      <stop offset="0.6" stop-color="#F97316"/>
+      <stop offset="1" stop-color="#FED7AA"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" rx="42" fill="url(#bg)"/>
+  <circle cx="1330" cy="180" r="190" fill="white" fill-opacity="0.09"/>
+  <circle cx="1380" cy="700" r="250" fill="white" fill-opacity="0.08"/>
+  <circle cx="260" cy="760" r="200" fill="white" fill-opacity="0.07"/>
+  <rect x="96" y="96" width="1408" height="708" rx="34" fill="#FFFFFF" fill-opacity="0.08" stroke="white" stroke-opacity="0.14" stroke-width="2"/>
+  <rect x="130" y="130" width="250" height="48" rx="24" fill="white" fill-opacity="0.16"/>
+  <text x="165" y="162" fill="white" font-family="Arial, sans-serif" font-size="24" font-weight="700" letter-spacing="4">COMMUNITY FORUM</text>
+  <text x="132" y="320" fill="white" font-family="Arial, sans-serif" font-size="88" font-weight="700">Community Impact Forum</text>
+  <text x="132" y="390" fill="white" fill-opacity="0.88" font-family="Arial, sans-serif" font-size="34" font-weight="500">Event Management Demo Collection</text>
+  <text x="132" y="690" fill="white" fill-opacity="0.82" font-family="Arial, sans-serif" font-size="34" font-weight="600">BRAC Centre Inn</text>
+  <path d="M132 730H540" stroke="white" stroke-opacity="0.55" stroke-width="8" stroke-linecap="round"/>
+  <rect x="1124" y="584" width="246" height="146" rx="28" fill="white" fill-opacity="0.13"/>
+  <circle cx="1198" cy="658" r="34" fill="white"/>
+  <path d="M1198 641C1188.61 641 1181 648.611 1181 658C1181 673.084 1198 691 1198 691C1198 691 1215 673.084 1215 658C1215 648.611 1207.39 641 1198 641ZM1198 665.5C1193.86 665.5 1190.5 662.142 1190.5 658C1190.5 653.858 1193.86 650.5 1198 650.5C1202.14 650.5 1205.5 653.858 1205.5 658C1205.5 662.142 1202.14 665.5 1198 665.5Z" fill="#1F2937"/>
+  <text x="1260" y="648" fill="white" font-family="Arial, sans-serif" font-size="22" font-weight="700">Live Event</text>
+  <text x="1260" y="680" fill="white" fill-opacity="0.8" font-family="Arial, sans-serif" font-size="18" font-weight="500">Demo poster image</text>
+</svg>

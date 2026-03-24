@@ -1,0 +1,27 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="32" y1="28" x2="220" y2="228" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#082F49"/>
+      <stop offset="0.55" stop-color="#0F766E"/>
+      <stop offset="1" stop-color="#0891B2"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="84" y1="62" x2="176" y2="180" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FDE68A"/>
+      <stop offset="1" stop-color="#FB923C"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="20" y="20" width="216" height="216" rx="56" fill="url(#bg)"/>
+
+  <path d="M82 86C82 72.7452 92.7452 62 106 62H150C163.255 62 174 72.7452 174 86V149.287C174 174.971 153.279 195.537 128 214C102.721 195.537 82 174.971 82 149.287V86Z" fill="white"/>
+
+  <path d="M102 58C102 52.4772 106.477 48 112 48C117.523 48 122 52.4772 122 58V74H102V58Z" fill="url(#glow)"/>
+  <path d="M134 58C134 52.4772 138.477 48 144 48C149.523 48 154 52.4772 154 58V74H134V58Z" fill="url(#glow)"/>
+
+  <rect x="94" y="88" width="68" height="8" rx="4" fill="#CFFAFE"/>
+
+  <path d="M101 116C101 111.582 104.582 108 109 108H115.5L128 129.5L140.5 108H147C151.418 108 155 111.582 155 116V165H141V132.5L128 154L115 132.5V165H101V116Z" fill="#082F49"/>
+
+  <path d="M128 176C117.507 176 109 167.493 109 157C109 146.507 117.507 138 128 138C138.493 138 147 146.507 147 157C147 167.493 138.493 176 128 176Z" fill="white"/>
+  <path d="M128 144C120.82 144 115 149.82 115 157C115 164.18 120.82 170 128 170C135.18 170 141 164.18 141 157C141 149.82 135.18 144 128 144ZM128 162.5C124.962 162.5 122.5 160.038 122.5 157C122.5 153.962 124.962 151.5 128 151.5C131.038 151.5 133.5 153.962 133.5 157C133.5 160.038 131.038 162.5 128 162.5Z" fill="url(#glow)"/>
+</svg>

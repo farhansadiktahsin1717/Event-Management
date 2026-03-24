@@ -15,12 +15,14 @@
                 <a href="{% url 'events:delete' event.pk %}" class="rounded-md border border-rose-300 px-3 py-2 font-semibold text-rose-700 hover:bg-rose-50">Delete</a>
             {% endif %}
             {% if is_participant %}
-                <form method="post" action="{% url 'events:rsvp' event.pk %}">
+                <form method="post" action="{% url 'events:rsvp' event.pk %}" data-loading-form>
                     {% csrf_token %}
-                    <button type="submit" class="rounded-md border border-cyan-300 px-3 py-2 font-semibold text-cyan-700 hover:bg-cyan-50" {% if already_rsvped %}disabled{% endif %}>
+                    <button type="submit" class="rounded-md border border-cyan-300 px-3 py-2 font-semibold text-cyan-700 hover:bg-cyan-50 disabled:cursor-not-allowed disabled:opacity-60" data-loading-label="Submitting..." {% if already_rsvped %}disabled{% endif %}>
                         {% if already_rsvped %}Already RSVP'd{% else %}RSVP{% endif %}
                     </button>
                 </form>
+            {% elif not request.user.is_authenticated %}
+                <a href="{% url 'users:login' %}" class="rounded-md border border-cyan-300 px-3 py-2 font-semibold text-cyan-700 hover:bg-cyan-50">Login to RSVP</a>
             {% endif %}
         </div>
     </div>

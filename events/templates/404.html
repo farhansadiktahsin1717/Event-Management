@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found{% endblock %}
+
+{% block content %}
+<section class="mx-auto max-w-3xl rounded-[2rem] bg-slate-950 px-6 py-14 text-center text-white shadow-2xl shadow-slate-900/20">
+    <p class="text-xs font-semibold uppercase tracking-[0.35em] text-cyan-300">404 error</p>
+    <h1 class="mt-4 text-4xl font-bold md:text-5xl">The page you were looking for is not here.</h1>
+    <p class="mt-4 text-base text-slate-300">The link may be outdated, or the page may have moved. Use one of the routes below to get back on track.</p>
+    <div class="mt-8 flex flex-wrap justify-center gap-3">
+        <a href="{% url 'events:list' %}" class="rounded-2xl bg-cyan-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-cyan-400">Go to homepage</a>
+        {% if request.user.is_authenticated %}
+            <a href="{% url 'users:dashboard' %}" class="rounded-2xl border border-white/20 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10">Open dashboard</a>
+        {% else %}
+            <a href="{% url 'users:login' %}" class="rounded-2xl border border-white/20 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10">Login</a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

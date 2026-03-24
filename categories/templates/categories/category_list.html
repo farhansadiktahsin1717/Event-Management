@@ -4,12 +4,15 @@
 
 {% block content %}
 <section class="mb-4 flex items-center justify-between gap-3">
-    <h1 class="text-2xl font-bold">Categories</h1>
+    <div>
+        <p class="text-xs font-semibold uppercase tracking-[0.3em] text-cyan-700">Catalog</p>
+        <h1 class="mt-2 text-3xl font-bold">Categories</h1>
+    </div>
     <a href="{% url 'categories:create' %}" class="rounded-lg bg-cyan-700 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">Add Category</a>
 </section>
 
-<section class="overflow-hidden rounded-xl border border-slate-200 bg-white">
-    <table class="w-full text-left text-sm">
+<section class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+    <table class="min-w-full text-left text-sm">
         <thead class="bg-slate-100 text-slate-700">
             <tr>
                 <th class="px-4 py-3 font-semibold">Name</th>
@@ -37,4 +40,6 @@
         </tbody>
     </table>
 </section>
+
+{% include "includes/pagination.html" %}
 {% endblock %}

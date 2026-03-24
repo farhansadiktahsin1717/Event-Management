@@ -1,0 +1,18 @@
+{% if page_obj and page_obj.paginator.num_pages > 1 %}
+<nav class="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-5" aria-label="Pagination">
+    <p class="text-sm text-slate-500">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</p>
+    <div class="flex flex-wrap items-center gap-2">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if pagination_query %}&{{ pagination_query }}{% endif %}" class="rounded-2xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">Previous</a>
+        {% endif %}
+
+        {% for page_number in page_obj.paginator.page_range %}
+            <a href="?page={{ page_number }}{% if pagination_query %}&{{ pagination_query }}{% endif %}" class="rounded-2xl px-4 py-2 text-sm font-semibold transition {% if page_obj.number == page_number %}bg-slate-900 text-white{% else %}border border-slate-300 text-slate-700 hover:bg-slate-100{% endif %}">{{ page_number }}</a>
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if pagination_query %}&{{ pagination_query }}{% endif %}" class="rounded-2xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">Next</a>
+        {% endif %}
+    </div>
+</nav>
+{% endif %}

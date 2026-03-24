@@ -1,13 +1,19 @@
+from urllib.parse import urlencode
+
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q
+from django.core.mail import EmailMessage
+from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 
 from categories.models import Category
 from users.utils import role_flags_for_user, role_required
 
-from .forms import EventForm
+from .forms import ContactForm, EventForm
 from .models import Event
 
 
@@ -18,11 +24,41 @@ def with_role_context(request, context=None):
     return base
 
 
-@login_required
+def paginate_queryset(request, queryset, per_page):
+    paginator = Paginator(queryset, per_page)
+    page_obj = paginator.get_page(request.GET.get("page"))
+    query_data = request.GET.copy()
+    query_data.pop("page", None)
+    return page_obj, urlencode(query_data, doseq=True)
+
+
 def event_list(request):
     events = Event.objects.select_related("category").prefetch_related("participants")
     categories = Category.objects.order_by("name")
     today = timezone.localdate()
+    contact_form = ContactForm()
+
+    if request.method == "POST":
+        contact_form = ContactForm(request.POST)
+        if contact_form.is_valid():
+            try:
+                email = EmailMessage(
+                    subject=f"New Event Management enquiry from {contact_form.cleaned_data['name']}",
+                    body=(
+                        f"Name: {contact_form.cleaned_data['name']}\n"
+                        f"Email: {contact_form.cleaned_data['email']}\n\n"
+                        f"{contact_form.cleaned_data['message']}"
+                    ),
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[settings.DEFAULT_FROM_EMAIL],
+                    reply_to=[contact_form.cleaned_data["email"]],
+                )
+                email.send(fail_silently=False)
+            except Exception:
+                messages.error(request, "We could not send your message right now. Please try again shortly.")
+            else:
+                messages.success(request, "Thanks for reaching out. Your message has been sent successfully.")
+                return redirect(f"{reverse('events:list')}#contact")
 
     query = (request.GET.get("q") or "").strip()
     category_id = (request.GET.get("category") or "").strip()
@@ -41,26 +77,33 @@ def event_list(request):
     events = events.annotate(participant_count=Count("participants", distinct=True)).order_by(
         "date", "time"
     )
+    page_obj, pagination_query = paginate_queryset(request, events, 6)
 
     participant_totals = Event.participants.through.objects.aggregate(total=Count("id"))
 
     context = {
-        "events": events,
+        "events": page_obj.object_list,
+        "page_obj": page_obj,
+        "pagination_query": pagination_query,
         "categories": categories,
+        "contact_form": contact_form,
         "search_query": query,
         "selected_category": category_id,
         "start_date": start_date,
         "end_date": end_date,
         "total_participants": participant_totals["total"] or 0,
         "today": today,
-        "can_manage": request.user.is_superuser
-        or request.user.groups.filter(name__in=["Admin", "Organizer"]).exists(),
-        "is_participant": request.user.groups.filter(name="Participant").exists(),
+        "can_manage": request.user.is_authenticated
+        and (
+            request.user.is_superuser
+            or request.user.groups.filter(name__in=["Admin", "Organizer"]).exists()
+        ),
+        "is_participant": request.user.is_authenticated
+        and request.user.groups.filter(name="Participant").exists(),
     }
     return render(request, "events/event_list.html", with_role_context(request, context))
 
 
-@login_required
 def event_detail(request, pk):
     event = get_object_or_404(
         Event.objects.select_related("category").prefetch_related("participants"),
@@ -74,10 +117,15 @@ def event_detail(request, pk):
             {
                 "event": event,
                 "participant_count": event.participants.count(),
-                "already_rsvped": event.participants.filter(pk=request.user.pk).exists(),
-                "can_manage": request.user.is_superuser
-                or request.user.groups.filter(name__in=["Admin", "Organizer"]).exists(),
-                "is_participant": request.user.groups.filter(name="Participant").exists(),
+                "already_rsvped": request.user.is_authenticated
+                and event.participants.filter(pk=request.user.pk).exists(),
+                "can_manage": request.user.is_authenticated
+                and (
+                    request.user.is_superuser
+                    or request.user.groups.filter(name__in=["Admin", "Organizer"]).exists()
+                ),
+                "is_participant": request.user.is_authenticated
+                and request.user.groups.filter(name="Participant").exists(),
             },
         ),
     )

@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 
 from users.utils import role_flags_for_user, role_required
@@ -14,10 +15,25 @@ def with_role_context(request, context=None):
     return base
 
 
+def paginate_queryset(request, queryset, per_page):
+    paginator = Paginator(queryset, per_page)
+    return paginator.get_page(request.GET.get("page"))
+
+
 @role_required("Admin", "Organizer")
 def category_list(request):
-    categories = Category.objects.order_by("name")
-    return render(request, "categories/category_list.html", with_role_context(request, {"categories": categories}))
+    page_obj = paginate_queryset(request, Category.objects.order_by("name"), 8)
+    return render(
+        request,
+        "categories/category_list.html",
+        with_role_context(
+            request,
+            {
+                "categories": page_obj.object_list,
+                "page_obj": page_obj,
+            },
+        ),
+    )
 
 
 @role_required("Admin", "Organizer")

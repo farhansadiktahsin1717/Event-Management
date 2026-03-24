@@ -10,6 +10,7 @@ ROLE_CHOICES = (
     ("Organizer", "Organizer"),
     ("Participant", "Participant"),
 )
+TEXT_INPUT_CLASS = "w-full rounded-lg border border-slate-300 px-3 py-2"
 
 
 class SignUpForm(UserCreationForm):
@@ -30,10 +31,24 @@ class SignUpForm(UserCreationForm):
             "password2",
         )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            css_class = TEXT_INPUT_CLASS
+            if field_name == "email":
+                field.widget.attrs["type"] = "email"
+            field.widget.attrs["class"] = css_class
+            field.widget.attrs.setdefault("placeholder", field.label)
+
 
 class LoginForm(AuthenticationForm):
     username = forms.CharField(max_length=150)
     password = forms.CharField(widget=forms.PasswordInput)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["username"].widget.attrs.update({"class": TEXT_INPUT_CLASS, "placeholder": "Username"})
+        self.fields["password"].widget.attrs.update({"class": TEXT_INPUT_CLASS, "placeholder": "Password"})
 
 
 class ProfileUpdateForm(forms.ModelForm):
@@ -65,11 +80,17 @@ class GroupCreateForm(forms.ModelForm):
     class Meta:
         model = Group
         fields = ("name",)
+        widgets = {
+            "name": forms.TextInput(attrs={"class": TEXT_INPUT_CLASS, "placeholder": "Group name"}),
+        }
 
 
 class RoleUpdateForm(forms.Form):
     user_id = forms.IntegerField(widget=forms.HiddenInput)
-    role = forms.ChoiceField(choices=ROLE_CHOICES)
+    role = forms.ChoiceField(
+        choices=ROLE_CHOICES,
+        widget=forms.Select(attrs={"class": TEXT_INPUT_CLASS}),
+    )
 
     def clean_user_id(self):
         user_id = self.cleaned_data["user_id"]

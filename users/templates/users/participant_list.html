@@ -4,7 +4,13 @@
 
 {% block content %}
 <section class="mb-4 flex items-center justify-between gap-3">
-    <h1 class="text-2xl font-bold">Participants</h1>
+    <div>
+        <p class="text-xs font-semibold uppercase tracking-[0.3em] text-cyan-700">Directory</p>
+        <h1 class="mt-2 text-3xl font-bold">Participants</h1>
+    </div>
+    <div class="rounded-2xl bg-white px-4 py-3 text-sm text-slate-600 shadow-sm">
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+    </div>
 </section>
 
 <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -30,4 +36,6 @@
         </div>
     {% endfor %}
 </section>
+
+{% include "includes/pagination.html" %}
 {% endblock %}
